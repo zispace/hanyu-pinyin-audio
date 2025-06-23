@@ -25,12 +25,12 @@ jobs:
       - name: Package data
         run: |
           root_dir="$(pwd)"
-          save_dir="$root_dir/${{ env.OUT_DIR }}"
+          save_dir="$root_dir/release"
           if [[ ! -d $save_dir ]]; then
               mkdir -p $save_dir
           fi
-          pushd ${{ env.SRC_DIR }}
-          find "$root_dir" -maxdepth 2 -type d ! -path '*/.*' | while read -r dir; do
+          pushd data
+          find "." -maxdepth 2 -type d ! -path '*/.*' | while read -r dir; do
               if ls "$dir"/*.mp3 &>/dev/null || ls "$dir"/*.wav &>/dev/null; then
                   parent_dir=$(basename "$(dirname "$dir")")
                   current_dir=$(basename "$dir")
