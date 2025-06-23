@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  create:
+    tags:
+      - 'v*'
+
+jobs:
+  process:
+    runs-on: ubuntu-latest
+    env:
+      SRC_DIR: data
+      OUT_DIR: release
+
+    steps:
+      - name: Checkout data Branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          ref: data
+          path: ${{ env.SRC_DIR }}
+
+      - name: Package data
+        run: |
+          root_dir="$(pwd)/${{ env.OUT_DIR }}"
+          cd ${{ env.SRC_DIR }}
+          find "$root_dir" -maxdepth 2 -type d ! -path '*/.*' | while read -r dir; do
+              if ls "$dir"/*.mp3 &>/dev/null || ls "$dir"/*.wav &>/dev/null; then
+                  parent_dir=$(basename "$(dirname "$dir")")
+                  current_dir=$(basename "$dir")
+                  zip_filename="$root_dir/${parent_dir}-${current_dir}.zip"
+
+                  echo "Packaged: $dir -> $zip_filename"
+                  zip -rjq "$zip_filename" "$dir"
+              fi
+          done
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          tag_name: ${{ github.ref }}
+          files: ${{ env.OUT_DIR }}/*.zip
+
+      - name: Upload built artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ env.OUT_DIR }}/*.zip
