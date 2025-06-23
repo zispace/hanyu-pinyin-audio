@@ -1,7 +1,7 @@
 name: Release
 
 on:
-  create:
+  push: # create
     tags:
       - 'v*'
 
@@ -13,6 +13,8 @@ jobs:
       OUT_DIR: release
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Checkout data Branch
         uses: actions/checkout@v4
         with:
@@ -22,24 +24,29 @@ jobs:
 
       - name: Package data
         run: |
-          root_dir="$(pwd)/${{ env.OUT_DIR }}"
-          cd ${{ env.SRC_DIR }}
+          root_dir="$(pwd)"
+          save_dir="$root_dir/${{ env.OUT_DIR }}"
+          if [[ ! -d $save_dir ]]; then
+              mkdir -p $save_dir
+          fi
+          pushd ${{ env.SRC_DIR }}
           find "$root_dir" -maxdepth 2 -type d ! -path '*/.*' | while read -r dir; do
               if ls "$dir"/*.mp3 &>/dev/null || ls "$dir"/*.wav &>/dev/null; then
                   parent_dir=$(basename "$(dirname "$dir")")
                   current_dir=$(basename "$dir")
-                  zip_filename="$root_dir/${parent_dir}-${current_dir}.zip"
+                  zip_filename="$save_dir/${parent_dir}-${current_dir}.zip"
 
                   echo "Packaged: $dir -> $zip_filename"
                   zip -rjq "$zip_filename" "$dir"
               fi
           done
+          popd
 
       - name: Release
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
-          tag_name: ${{ github.ref }}
+          # tag_name: ${{ github.ref }}
           files: ${{ env.OUT_DIR }}/*.zip
 
       - name: Upload built artifact
