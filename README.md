@@ -11,6 +11,7 @@
 - [x] https://www.uvm.edu/~chinese/pinyin.htm
 - [x] https://chinese.yabla.com/chinese-pinyin-chart.php
 - [x] https://yoyochinese.com/chinese-learning-tools/Mandarin-Chinese-pronunciation-lesson/pinyin-chart-table
+- [x] https://www.sreading.org/zh-hans/pinyin-pathway
 
 ## 来自git仓库
 
